@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Whizzo Software, LLC.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package com.whizzosoftware.hobson.lifx.api.codec;
 
 import com.whizzosoftware.hobson.lifx.api.message.LightState;
@@ -22,22 +29,11 @@ public class LIFXFrameDecoderTest {
         assertEquals("Dan's Office", ((LightState)list.get(0)).getLabel());
     }
 
-
-//    @Test
-//    public void testLightGetTest() throws Exception {
-//        byte[] expected = new byte[] {0x24, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x65, 0x00, 0x00, 0x00};
-//        LIFXFrameDecoder d = new LIFXFrameDecoder();
-//        List<Object> list = new ArrayList<>();
-//        d.decode(null, new DatagramPacket(Unpooled.wrappedBuffer(expected), new InetSocketAddress("255.255.255.255", 56700)), list);
-//        assertEquals(1, list.size());
-//    }
-//
-//    @Test
-//    public void testSetColorTest() throws Exception {
-//        byte[] expected = { 0x31, 0x00, 0x00, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66, 0x00, 0x00, 0x00, 0x00, 0x55, 0x55, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xAC, 0x0D, 0x00, 0x04, 0x00, 0x00 };
-//        LIFXFrameDecoder d = new LIFXFrameDecoder();
-//        List<Object> list = new ArrayList<>();
-//        d.decode(null, new DatagramPacket(Unpooled.wrappedBuffer(expected), new InetSocketAddress("255.255.255.255", 56700)), list);
-//        assertEquals(1, list.size());
-//    }
+    @Test
+    public void testReadShortLE() {
+        LIFXFrameDecoder d = new LIFXFrameDecoder();
+        assertEquals(65535, d.read16BitLE(Unpooled.wrappedBuffer(new byte[] { -1, -1 })));
+        assertEquals(32767, d.read16BitLE(Unpooled.wrappedBuffer(new byte[] { -1, 127 })));
+        assertEquals(0, d.read16BitLE(Unpooled.wrappedBuffer(new byte[] { 0, 0 })));
+    }
 }

@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Whizzo Software, LLC.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package com.whizzosoftware.hobson.lifx;
 
 import com.whizzosoftware.hobson.api.device.AbstractHobsonDevice;
@@ -56,9 +63,9 @@ public class LIFXBulb extends AbstractHobsonDevice {
     @Override
     public void onStartup(PropertyContainer config) {
         long now = System.currentTimeMillis();
-        publishVariable(VariableConstants.ON, initialState != null && initialState.getPower() < 0, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
-        publishVariable(VariableConstants.LEVEL, null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
-        publishVariable(VariableConstants.COLOR, null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
+        publishVariable(VariableConstants.ON, initialState != null && initialState.getPower() > 0, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
+        publishVariable(VariableConstants.LEVEL, initialState != null ? (int)(initialState.getColor().getBrightness() / 655.35) : null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
+        publishVariable(VariableConstants.COLOR, initialState != null ? initialState.getColor().toRGBString() : null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
         initialState = null;
     }
 
@@ -84,7 +91,9 @@ public class LIFXBulb extends AbstractHobsonDevice {
         logger.trace("Device {} update: {}", getContext(), state);
         setDeviceAvailability(true, now);
         List<VariableUpdate> notes = new ArrayList<>();
-        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), state.getPower() < 0, now));
+        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), state.getPower() > 0, now));
+        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.LEVEL), (int)(state.getColor().getBrightness() / 655.35), now));
+        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.COLOR), state.getColor().toRGBString(), now));
         fireVariableUpdateNotifications(notes);
     }
 

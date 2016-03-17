@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Whizzo Software, LLC.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package com.whizzosoftware.hobson.lifx.api.message;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -15,9 +22,9 @@ public class HSBK {
 
     public HSBK(int r, int g, int b) {
         float[] hsb = Color.RGBtoHSB(r, g, b, null);
-        this.hue = (int)((hsb[0]) * 65535);
-        this.saturation = (int)((hsb[1]) * 65535);
-        this.brightness = (int)((hsb[2]) * 65535);
+        this.hue = (int)((Math.min(hsb[0], 1.0)) * 65535);
+        this.saturation = (int)((Math.min(hsb[1], 1.0)) * 65535);
+        this.brightness = (int)((Math.min(hsb[2], 1.0)) * 65535);
         this.kelvin = DEFAULT_KELVIN;
     }
 
@@ -42,6 +49,11 @@ public class HSBK {
 
     public int getKelvin() {
         return kelvin;
+    }
+
+    public String toRGBString() {
+        int rgb = Color.HSBtoRGB(this.hue / 65535.0f, this.saturation / 65535.0f, this.brightness / 65535.0f);
+        return "rgb(" + ((rgb >> 16) & 0xFF) + "," + ((rgb >> 8) & 0xFF) + "," + (rgb & 0xFF) + ")";
     }
 
     public String toString() {

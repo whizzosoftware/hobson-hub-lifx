@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Whizzo Software, LLC.
+ * Copyright (c) 2016 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,7 +90,6 @@ public class LIFXPlugin extends AbstractChannelObjectPlugin {
             case LightState.TYPE:
                 LightState ls = (LightState)m;
                 LIFXBulb bulb = devices.get(id);
-                logger.trace("Received bulb status from {}: {}", id, ls);
                 if (bulb != null) {
                     bulb.update(ls);
                 } else {

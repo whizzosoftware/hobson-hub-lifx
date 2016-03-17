@@ -60,33 +60,33 @@ public class LIFXFrameDecoder extends MessageToMessageDecoder {
     }
 
     protected Object readDeviceStateService(InetSocketAddress sender, ByteBuf buf) {
-        return new DeviceStateService(sender, readHeader(buf), buf.readByte(), readIntLE(buf));
+        return new DeviceStateService(sender, readHeader(buf), buf.readByte(), read32BitLE(buf));
     }
 
     protected Object readLightState(InetSocketAddress sender, ByteBuf buf) {
         MessageHeader header = readHeader(buf);
-        readShortLE(buf); // reserved
         HSBK color = readColor(buf);
-        short power = readShortLE(buf);
+        read16BitLE(buf); // reserved
+        int power = read16BitLE(buf);
         String label = readString(buf, 32);
-        readLongLE(buf); // reserved
+        read64BitLE(buf); // reserved
         return new LightState(sender, header, color, power, label).setSender(sender);
     }
 
     protected Object readLightStatePower(InetSocketAddress sender, ByteBuf buf) {
-        return new LightStatePower(sender, readHeader(buf), readShortLE(buf)).setSender(sender);
+        return new LightStatePower(sender, readHeader(buf), read16BitLE(buf)).setSender(sender);
     }
 
     protected MessageHeader readHeader(ByteBuf buf) {
         // read message length
-        int length = readShortLE(buf);
+        int length = read16BitLE(buf);
         // read origin/tagged/addressable/protocol
         buf.readByte();
         buf.readByte();
         // read source
-        int source = readIntLE(buf);
+        int source = read32BitLE(buf);
         // read target
-        long target = readLongLE(buf);
+        long target = read64BitLE(buf);
         // read reserved
         buf.readByte();
         buf.readByte();
@@ -108,7 +108,7 @@ public class LIFXFrameDecoder extends MessageToMessageDecoder {
         buf.readByte();
         buf.readByte();
         // read type
-        int type = readShortLE(buf);
+        int type = read16BitLE(buf);
         // read reserved
         buf.readByte();
         buf.readByte();
@@ -117,15 +117,15 @@ public class LIFXFrameDecoder extends MessageToMessageDecoder {
         return new MessageHeader(length, false, false, source, target, true, true, sequence, type);
     }
 
-    protected short readShortLE(ByteBuf buf) {
-        return (short)(buf.readByte() + (buf.readByte() << 8));
+    protected int read16BitLE(ByteBuf buf) {
+        return ((buf.readByte() & 0xFF) + ((buf.readByte() << 8)) & 0xFFFF);
     }
 
-    protected int readIntLE(ByteBuf buf) {
+    protected int read32BitLE(ByteBuf buf) {
         return (buf.readByte() + (buf.readByte() >> 8) + (buf.readByte() >> 16) + (buf.readByte() >> 24));
     }
 
-    protected long readLongLE(ByteBuf buf) {
+    protected long read64BitLE(ByteBuf buf) {
         return (buf.readByte() + (buf.readByte() >> 8) + (buf.readByte() >> 16) + (buf.readByte() >> 24) + (buf.readByte() >> 32) + (buf.readByte() >> 40) + (buf.readByte() >> 48) + (buf.readByte() >> 56));
     }
 
@@ -141,6 +141,6 @@ public class LIFXFrameDecoder extends MessageToMessageDecoder {
     }
 
     protected HSBK readColor(ByteBuf buf) {
-        return new HSBK(readShortLE(buf), readShortLE(buf), readShortLE(buf), readShortLE(buf));
+        return new HSBK(read16BitLE(buf), read16BitLE(buf), read16BitLE(buf), read16BitLE(buf));
     }
 }
