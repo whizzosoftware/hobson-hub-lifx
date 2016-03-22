@@ -11,9 +11,10 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.awt.*;
+import java.util.StringTokenizer;
 
 public class HSBK {
-    private static final int DEFAULT_KELVIN = 3500;
+    public static final int DEFAULT_KELVIN = 3500;
 
     private int hue;
     private int saturation;
@@ -35,6 +36,24 @@ public class HSBK {
         this.kelvin = kelvin;
     }
 
+    public HSBK(String s) {
+        if (s.startsWith("hsb(") && s.endsWith(")")) {
+            StringTokenizer tok = new StringTokenizer(s.substring(4, s.length() - 1), ",");
+            hue = (int)(Integer.parseInt(tok.nextToken().trim()) * 182.0416666667);
+            saturation = (int)(Integer.parseInt(tok.nextToken().trim()) * 655.35);
+            brightness = (int)(Integer.parseInt(tok.nextToken().trim()) * 655.35);
+            kelvin = DEFAULT_KELVIN;
+        } else if (s.startsWith("kb(") && s.endsWith(")")) {
+            StringTokenizer tok = new StringTokenizer(s.substring(3, s.length() - 1), ",");
+            hue = 0;
+            saturation = 0;
+            kelvin = Integer.parseInt(tok.nextToken().trim());
+            brightness = (int)(Integer.parseInt(tok.nextToken().trim()) * 655.35);
+        } else {
+            throw new IllegalArgumentException("Not a valid color string");
+        }
+    }
+
     public int getHue() {
         return hue;
     }
@@ -54,6 +73,14 @@ public class HSBK {
     public String toRGBString() {
         int rgb = Color.HSBtoRGB(this.hue / 65535.0f, this.saturation / 65535.0f, this.brightness / 65535.0f);
         return "rgb(" + ((rgb >> 16) & 0xFF) + "," + ((rgb >> 8) & 0xFF) + "," + (rgb & 0xFF) + ")";
+    }
+
+    public String toColorString() {
+        if (saturation > 0) {
+            return "hsb(" + (int)(hue / 182.0416666667) + "," + (int)(saturation / 655.35) + "," + (int)(brightness / 655.35) + ")";
+        } else {
+            return "kb(" + kelvin + "," + (int)(brightness / 655.35) + ")";
+        }
     }
 
     public String toString() {

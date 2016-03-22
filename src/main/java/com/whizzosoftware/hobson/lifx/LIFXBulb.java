@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 public class LIFXBulb extends AbstractHobsonDevice {
     private static final Logger logger = LoggerFactory.getLogger(LIFXBulb.class);
@@ -38,7 +37,7 @@ public class LIFXBulb extends AbstractHobsonDevice {
      * @param plugin the HobsonPlugin that created this device
      * @param id     the device ID
      */
-    public LIFXBulb(HobsonPlugin plugin, long id, InetSocketAddress address, String name, LightState state) {
+    LIFXBulb(HobsonPlugin plugin, long id, InetSocketAddress address, String name, LightState state) {
         super(plugin, Long.toHexString(id));
         this.address = address;
         setDefaultName(name);
@@ -64,7 +63,6 @@ public class LIFXBulb extends AbstractHobsonDevice {
     public void onStartup(PropertyContainer config) {
         long now = System.currentTimeMillis();
         publishVariable(VariableConstants.ON, initialState != null && initialState.getPower() > 0, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
-        publishVariable(VariableConstants.LEVEL, initialState != null ? (int)(initialState.getColor().getBrightness() / 655.35) : null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
         publishVariable(VariableConstants.COLOR, initialState != null ? initialState.getColor().toRGBString() : null, HobsonVariable.Mask.READ_WRITE, initialState != null ? now : null);
         initialState = null;
     }
@@ -81,31 +79,18 @@ public class LIFXBulb extends AbstractHobsonDevice {
                 ((LIFXPlugin)getPlugin()).sendLightSetPower(address, (boolean)value);
                 break;
             case VariableConstants.COLOR:
-                ((LIFXPlugin)getPlugin()).sendLightSetColor(address, createColorFromRGBString((String)value));
+                ((LIFXPlugin)getPlugin()).sendLightSetColor(address, new HSBK((String)value));
                 break;
         }
     }
 
-    public void update(LightState state) {
+    void update(LightState state) {
         long now = System.currentTimeMillis();
         logger.trace("Device {} update: {}", getContext(), state);
         setDeviceAvailability(true, now);
         List<VariableUpdate> notes = new ArrayList<>();
         notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), state.getPower() > 0, now));
-        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.LEVEL), (int)(state.getColor().getBrightness() / 655.35), now));
-        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.COLOR), state.getColor().toRGBString(), now));
+        notes.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.COLOR), state.getColor().toColorString(), now));
         fireVariableUpdateNotifications(notes);
-    }
-
-    private HSBK createColorFromRGBString(String color) {
-        if (color.startsWith("rgb(") && color.endsWith(")")) {
-            StringTokenizer tok = new StringTokenizer(color.substring(4, color.length() - 1), ",");
-            return new HSBK(
-                Integer.parseInt(tok.nextToken().trim()),
-                Integer.parseInt(tok.nextToken().trim()),
-                Integer.parseInt(tok.nextToken().trim())
-            );
-        }
-        return null;
     }
 }
