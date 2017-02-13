@@ -1,10 +1,12 @@
-/*******************************************************************************
+/*
+ *******************************************************************************
  * Copyright (c) 2016 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
+ *******************************************************************************
+*/
 package com.whizzosoftware.hobson.lifx;
 
 import com.whizzosoftware.hobson.api.plugin.PluginStatus;
@@ -33,8 +35,8 @@ public class LIFXPlugin extends AbstractChannelObjectPlugin {
 
     private Map<String,LIFXBulb> devices = new HashMap<>();
 
-    public LIFXPlugin(String pluginId) {
-        super(pluginId);
+    public LIFXPlugin(String pluginId, String version, String description) {
+        super(pluginId, version, description);
     }
 
     @Override
@@ -95,7 +97,7 @@ public class LIFXPlugin extends AbstractChannelObjectPlugin {
                 } else {
                     logger.debug("Publishing new bulb: {}", id);
                     bulb = new LIFXBulb(this, m.getHeader().getTarget(), m.getSender(), ls.getLabel(), ls);
-                    publishDevice(bulb);
+                    publishDeviceProxy(bulb);
                     devices.put(id, bulb);
                 }
                 break;
@@ -117,20 +119,20 @@ public class LIFXPlugin extends AbstractChannelObjectPlugin {
         send(new LightGet(new InetSocketAddress("255.255.255.255", getDefaultPort())));
     }
 
-    public void getDeviceService() {
+    private void getDeviceService() {
         send(new DeviceGetService());
     }
 
-    public void sendLightSetPower(InetSocketAddress recipient, boolean on) {
+    void sendLightSetPower(InetSocketAddress recipient, boolean on) {
         send(new LightSetPower(recipient, on ? 65535 : 0, 0));
     }
 
-    public void sendLightSetColor(InetSocketAddress recipient, HSBK color) {
+    void sendLightSetColor(InetSocketAddress recipient, HSBK color) {
         send(new LightSetColor(recipient, color, 0));
     }
 
     @Override
-    protected TypedProperty[] createSupportedProperties() {
+    protected TypedProperty[] getConfigurationPropertyTypes() {
         return null;
     }
 }
